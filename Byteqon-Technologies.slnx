@@ -5,5 +5,10 @@
     <Project Path="Byteqon.Domain/Byteqon.Domain.csproj" />
     <Project Path="Byteqon.Infrastructure/Byteqon.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="Byteqon.Application.Tests/Byteqon.Application.Tests.csproj" />
+    <Project Path="Byteqon.Architecture.Tests/Byteqon.Architecture.Tests.csproj" />
+    <Project Path="Byteqon.Domain.Tests/Byteqon.Domain.Tests.csproj" />
+    <Project Path="Byteqon.IntegrationTests/Byteqon.IntegrationTests.csproj" />
+  </Folder>
 </Solution>
