@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Byteqon.Api/Byteqon.Api.csproj" />
+    <Project Path="Byteqon.Application/Byteqon.Application.csproj" />
+    <Project Path="Byteqon.Domain/Byteqon.Domain.csproj" />
+    <Project Path="Byteqon.Infrastructure/Byteqon.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
