@@ -1,35 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="10.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
-    <PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>
+				runtime; build; native; contentfiles; analyzers; buildtransitive
+			</IncludeAssets>
+		</PackageReference>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Byteqon.Api\Byteqon.Api.csproj" />
-    <ProjectReference Include="..\Byteqon.Application\Byteqon.Application.csproj" />
-    <ProjectReference Include="..\Byteqon.Domain\Byteqon.Domain.csproj" />
-    <ProjectReference Include="..\Byteqon.Infrastructure\Byteqon.Infrastructure.csproj" />
-  </ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+		<PackageReference Include="NetArchTest.Rules" />
+
+		<PackageReference Include="xunit" />
+
+		<PackageReference Include="xunit.runner.visualstudio">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>
+				runtime; build; native; contentfiles; analyzers; buildtransitive
+			</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Byteqon.Api\Byteqon.Api.csproj" />
+		<ProjectReference Include="..\Byteqon.Application\Byteqon.Application.csproj" />
+		<ProjectReference Include="..\Byteqon.Domain\Byteqon.Domain.csproj" />
+		<ProjectReference Include="..\Byteqon.Infrastructure\Byteqon.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
 
 </Project>
