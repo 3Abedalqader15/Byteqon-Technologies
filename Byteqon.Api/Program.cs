@@ -13,11 +13,12 @@ builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
     {
-        context.ProblemDetails.Extensions["traceId"] =
-            context.HttpContext.TraceIdentifier;
-
-        context.ProblemDetails.Instance =
+        context.ProblemDetails.Instance ??=
             context.HttpContext.Request.Path;
+
+        context.ProblemDetails.Extensions.TryAdd(
+            "traceId",
+            context.HttpContext.TraceIdentifier);
     };
 });
 builder.Services.AddOpenApi();

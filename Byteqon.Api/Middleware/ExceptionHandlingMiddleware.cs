@@ -1,82 +1,117 @@
+using Byteqon.Api.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Byteqon.Api.Middleware;
 
 public sealed class ExceptionHandlingMiddleware(
     RequestDelegate next,
-    ILogger<ExceptionHandlingMiddleware> logger)
+    ILogger<ExceptionHandlingMiddleware> logger,
+    IProblemDetailsService problemDetailsService)
 {
-    private readonly RequestDelegate _next = next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
-
-    public async Task InvokeAsync(
-        HttpContext context,
-        IProblemDetailsService problemDetailsService)
+    public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (OperationCanceledException)
             when (context.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogInformation(
-                "Request was cancelled by the client. TraceId: {TraceId}",
+            logger.LogInformation(
+                "The request was cancelled by the client. TraceId: {TraceId}",
                 context.TraceIdentifier);
-
-            throw;
         }
         catch (Exception exception)
         {
-            await HandleExceptionAsync(
-                context,
-                exception,
-                problemDetailsService);
+            await HandleExceptionAsync(context, exception);
         }
     }
 
     private async Task HandleExceptionAsync(
         HttpContext context,
-        Exception exception,
-        IProblemDetailsService problemDetailsService)
+        Exception exception)
     {
-        _logger.LogError(
+        ExceptionDescriptor descriptor =
+            ExceptionMapping.Map(exception);
+
+        LogException(
             exception,
-            "An unhandled exception occurred while processing {Method} {Path}. TraceId: {TraceId}",
-            context.Request.Method,
-            context.Request.Path,
+            descriptor.StatusCode,
             context.TraceIdentifier);
 
         if (context.Response.HasStarted)
         {
-            _logger.LogWarning(
-                "The response has already started. Exception handling response cannot be written. TraceId: {TraceId}",
+            logger.LogWarning(
+                "The response has already started. " +
+                "ProblemDetails cannot be written. TraceId: {TraceId}",
                 context.TraceIdentifier);
 
             throw exception;
         }
 
         context.Response.Clear();
-        context.Response.StatusCode =
-            StatusCodes.Status500InternalServerError;
+        context.Response.StatusCode = descriptor.StatusCode;
 
-        var problemDetails = new ProblemDetails
+        ProblemDetails problemDetails = new()
         {
-            Type = "https://api.byteqon.com/errors/internal-server-error",
-            Title = "Internal server error",
-            Status = StatusCodes.Status500InternalServerError,
-            Detail = "An unexpected error occurred while processing the request.",
+            Type =
+                $"https://api.byteqon.com/errors/{descriptor.ErrorCode}",
+            Title = descriptor.Title,
+            Status = descriptor.StatusCode,
+            Detail = descriptor.Detail,
             Instance = context.Request.Path
         };
 
         problemDetails.Extensions["traceId"] =
             context.TraceIdentifier;
 
-        await problemDetailsService.WriteAsync(
-            new ProblemDetailsContext
-            {
-                HttpContext = context,
-                ProblemDetails = problemDetails
-            });
+        problemDetails.Extensions["errorCode"] =
+            descriptor.ErrorCode;
+
+        ProblemDetailsContext problemDetailsContext = new()
+        {
+            HttpContext = context,
+            ProblemDetails = problemDetails,
+            Exception = exception
+        };
+
+        bool wasWritten =
+            await problemDetailsService.TryWriteAsync(
+                problemDetailsContext);
+
+        if (!wasWritten)
+        {
+            context.Response.ContentType =
+                "application/problem+json";
+
+            await context.Response.WriteAsJsonAsync(
+                problemDetails,
+                cancellationToken: context.RequestAborted);
+        }
+    }
+
+    private void LogException(
+        Exception exception,
+        int statusCode,
+        string traceId)
+    {
+        if (statusCode >= StatusCodes.Status500InternalServerError)
+        {
+            logger.LogError(
+                exception,
+                "An unhandled server exception occurred. " +
+                "StatusCode: {StatusCode}, TraceId: {TraceId}",
+                statusCode,
+                traceId);
+
+            return;
+        }
+
+        logger.LogWarning(
+            exception,
+            "A handled application exception occurred. " +
+            "StatusCode: {StatusCode}, TraceId: {TraceId}",
+            statusCode,
+            traceId);
     }
 }
