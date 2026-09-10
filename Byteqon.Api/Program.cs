@@ -1,5 +1,6 @@
+using Byteqon.Api.Common.Filters;
 using Byteqon.Api.Middleware;
-
+using Microsoft.AspNetCore.Mvc;
 
 
 
@@ -8,7 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidateModelAttribute>();
+});
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>

@@ -9,4 +9,9 @@
     <ProjectReference Include="..\Byteqon.Infrastructure\Byteqon.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Contracts\" />
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>
