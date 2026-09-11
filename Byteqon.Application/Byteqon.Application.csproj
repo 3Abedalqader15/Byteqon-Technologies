@@ -2,6 +2,11 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+
+  <ItemGroup>
     <ProjectReference Include="..\Byteqon.Domain\Byteqon.Domain.csproj" />
   </ItemGroup>
 
