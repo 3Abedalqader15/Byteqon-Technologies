@@ -35,7 +35,14 @@ builder.Services.AddProblemDetails(options =>
             context.HttpContext.TraceIdentifier);
     };
 });
+
+
+
+// Add OpenAPI services
 builder.Services.AddByteqonOpenApi();
+
+// Add health checks
+builder.Services.AddByteqonHealthChecks();
 
 var app = builder.Build();
 
@@ -54,5 +61,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map health check endpoints
+app.MapByteqonHealthChecks();
 
 app.Run();
