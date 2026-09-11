@@ -14,10 +14,13 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<ValidateModelAttribute>();
 });
 
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
 });
+
+// problem details configuration
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
