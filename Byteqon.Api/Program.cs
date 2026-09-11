@@ -1,5 +1,7 @@
 using Byteqon.Api.Common.Filters;
+using Byteqon.Api.Extensions;
 using Byteqon.Api.Middleware;
+using Byteqon.Api.OpenApi;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -33,7 +35,7 @@ builder.Services.AddProblemDetails(options =>
             context.HttpContext.TraceIdentifier);
     };
 });
-builder.Services.AddOpenApi();
+builder.Services.AddByteqonOpenApi();
 
 var app = builder.Build();
 
@@ -42,7 +44,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi(OpenApiConstants.JsonRoute);
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

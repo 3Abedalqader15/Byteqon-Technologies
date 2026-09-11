@@ -1,10 +1,14 @@
 using Byteqon.Api.Common.Extensions;
+using Byteqon.Api.OpenApi;
 using Byteqon.Application.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Byteqon.Api.Controllers;
 
 [ApiController]
+[Produces("application/json")]
+[ProducesProblemResponse(
+    StatusCodes.Status500InternalServerError)]
 public abstract class ApiControllerBase : ControllerBase
 {
     protected IActionResult HandleFailure(Result result)
@@ -21,22 +25,6 @@ public abstract class ApiControllerBase : ControllerBase
         }
 
         return Ok(result.Value);
-    }
-
-    protected IActionResult HandleCreatedResult<TValue>(
-        Result<TValue> result,
-        string actionName,
-        object routeValues)
-    {
-        if (result.IsFailure)
-        {
-            return HandleFailure(result);
-        }
-
-        return CreatedAtAction(
-            actionName,
-            routeValues,
-            result.Value);
     }
 
     protected IActionResult HandleNoContentResult(
