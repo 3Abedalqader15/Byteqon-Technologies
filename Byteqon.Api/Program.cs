@@ -36,3 +36,5 @@ app.MapControllers();
 app.MapByteqonHealthChecks();
 
 app.Run();
+
+public partial class Program;

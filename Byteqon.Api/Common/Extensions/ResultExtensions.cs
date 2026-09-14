@@ -5,10 +5,16 @@ namespace Byteqon.Api.Common.Extensions;
 
 public static class ResultExtensions
 {
+    private const string ProblemContentType =
+        "application/problem+json";
+
     public static IActionResult ToProblemDetails(
         this Result result,
         HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(result);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         if (result.IsSuccess)
         {
             throw new InvalidOperationException(
@@ -16,14 +22,16 @@ public static class ResultExtensions
         }
 
         Error error = result.Error;
-        int statusCode = MapStatusCode(error.Type);
+
+        int statusCode =
+            MapStatusCode(error.Type);
 
         ProblemDetails problemDetails = new()
         {
             Type = CreateProblemType(error.Type),
             Title = CreateTitle(error.Type),
             Status = statusCode,
-            Detail = error.Message,
+            Detail = GetSafeDetail(error),
             Instance = httpContext.Request.Path
         };
 
@@ -33,17 +41,20 @@ public static class ResultExtensions
         problemDetails.Extensions["traceId"] =
             httpContext.TraceIdentifier;
 
-        return new ObjectResult(problemDetails)
+        ObjectResult objectResult = new(problemDetails)
         {
-            StatusCode = statusCode,
-            ContentTypes =
-            {
-                "application/problem+json"
-            }
+            StatusCode = statusCode
         };
+
+        objectResult.ContentTypes.Clear();
+        objectResult.ContentTypes.Add(
+            ProblemContentType);
+
+        return objectResult;
     }
 
-    private static int MapStatusCode(ErrorType errorType)
+    private static int MapStatusCode(
+        ErrorType errorType)
     {
         return errorType switch
         {
@@ -97,6 +108,10 @@ public static class ResultExtensions
             ErrorType.Failure =>
                 "Operation failed",
 
+            ErrorType.None =>
+                throw new InvalidOperationException(
+                    "ErrorType.None cannot have an error title."),
+
             _ =>
                 "An unexpected error occurred"
         };
@@ -107,20 +122,41 @@ public static class ResultExtensions
     {
         string errorName = errorType switch
         {
-            ErrorType.Validation => "validation",
-            ErrorType.Unauthorized => "unauthorized",
-            ErrorType.Forbidden => "forbidden",
-            ErrorType.NotFound => "not-found",
-            ErrorType.Conflict => "conflict",
-            ErrorType.Failure => "failure",
+            ErrorType.Validation =>
+                "validation",
+
+            ErrorType.Unauthorized =>
+                "unauthorized",
+
+            ErrorType.Forbidden =>
+                "forbidden",
+
+            ErrorType.NotFound =>
+                "not-found",
+
+            ErrorType.Conflict =>
+                "conflict",
+
+            ErrorType.Failure =>
+                "failure",
 
             ErrorType.None =>
                 throw new InvalidOperationException(
-                    "ErrorType.None cannot be mapped to an error response."),
+                    "ErrorType.None cannot have a problem type."),
 
-            _ => "internal-server-error"
+            _ =>
+                "internal-server-error"
         };
 
-        return $"https://api.byteqon.com/errors/{errorName}";
+        return
+            $"https://api.byteqon.com/errors/{errorName}";
+    }
+
+    private static string GetSafeDetail(
+        Error error)
+    {
+        return error.Type == ErrorType.Failure
+            ? "The operation could not be completed."
+            : error.Message;
     }
 }
